@@ -8,5 +8,5 @@ class App extends Spine.Controller
     super
     @distillery = new Distillery
     @append @distillery
-
+    
 module.exports = App

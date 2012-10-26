@@ -24,7 +24,7 @@ class Distillery extends Spine.Controller
     )(fileList)
 
     @buffer = stream.readAsArrayBuffer(fileList)
-
+    
     @log @buffer
 
   render: ->
