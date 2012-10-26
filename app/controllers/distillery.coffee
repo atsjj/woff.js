@@ -1,31 +1,49 @@
-Spine = require("spine")
-$     = Spine.$
+jDataView = require("jParser/node_modules/jDataView/src/jdataview")
+jParser   = require("jParser/src/jparser")
+Spine     = require("spine")
+Woff      = require("controllers/woff")
+$         = Spine.$
+
+jQuery.event.props.push("dataTransfer");
 
 class Distillery extends Spine.Controller
+  buffer: null
   className: "distillery"
+  events:
+    "dragenter #kettle": "dragging"
+    "dragover #kettle": "dragged"
+    "drop #kettle": "dropped"
 
   constructor: ->
     super
     @active @render()
-
-  events:
-    "change input[type=file]": "changed"
-
-  changed: (event) ->
-    @log "Distillery::changed"
+  
+  kill: (event) ->
+    event.stopPropagation()
+    event.preventDefault()
+  
+  dragging: (event) ->
+    @kill event
+    @log "Distillery::dragging", event
+  
+  dragged: (event) ->
+    @kill event
+    @log "Distillery::dragged", event
     
-    fileList = event.target.files[0]
+  dropped: (event) ->
+    @kill event
+    @log "Distillery::dropped", event
+    
+    file = event.dataTransfer.files[0]
+    return false unless file.type is "application/x-font-woff"
+    
     stream = new FileReader()
-    stream.onload = ((file) ->
-      (
-        (e) ->
-          new Uint16Array e.target.result
-      )
-    )(fileList)
-
-    @buffer = stream.readAsArrayBuffer(fileList)
+    stream.addEventListener "load", @proxy @buffering
+    stream.readAsArrayBuffer(file)
     
-    @log @buffer
+  buffering: (event) ->
+    @log "Distillery::buffering", event
+    @buffer = new Woff(event.target.result)
 
   render: ->
     @html require("views/distillery")(@)
